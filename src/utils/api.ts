@@ -6,9 +6,11 @@ import { Event } from '../data/events'
 
 // Get API URL from environment or use default
 const getApiUrl = () => {
-  // Check if running in browser with environment variable
-  if (typeof window !== 'undefined' && (window as any).ENV?.REACT_APP_API_URL) {
-    return (window as any).ENV.REACT_APP_API_URL
+  // For Vite, use import.meta.env
+  if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) {
+    const apiUrl = import.meta.env.VITE_API_URL
+    // If URL already includes /api, don't add it again
+    return apiUrl.endsWith('/api') ? apiUrl : `${apiUrl}/api`
   }
   // Default to localhost for development
   return 'http://localhost:5000/api'

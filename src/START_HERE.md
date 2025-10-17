@@ -6,20 +6,24 @@
 
 ## 📖 Documentation
 
-We have **4 main documentation files**. Start with #1:
+We have **5 main documentation files**. Start with #1:
 
 1. **[README.md](README.md)** 📖 - **START HERE!**
    - Features, Quick Start, Deployment
    - Everything you need to get started
 
-2. **[TESTING.md](TESTING.md)** 🧪
+2. **[QUICK_DEPLOY.md](QUICK_DEPLOY.md)** 🚀 - **Deploy to Internet**
+   - 30-minute deployment guide
+   - Step-by-step Vercel + Render setup
+
+3. **[TESTING.md](TESTING.md)** 🧪
    - Complete testing guide
    - 15 test scenarios
 
-3. **[CHANGELOG.md](CHANGELOG.md)** 📝
+4. **[CHANGELOG.md](CHANGELOG.md)** 📝
    - Bugfixes, updates, roadmap
 
-4. **[backend/README.md](backend/README.md)** 🔌
+5. **[backend/README.md](backend/README.md)** 🔌
    - Backend API documentation
 
 ---
@@ -212,28 +216,26 @@ const categories = [
 
 ## 📦 Deployment
 
-### Backend
+Want to deploy to the Internet? **Easy!**
 
-**Heroku / Railway / VPS:**
-```bash
-cd backend
-# Deploy to your platform
-```
+### 🚀 Quick Deploy (30 minutes)
 
-### Frontend
+Follow **[QUICK_DEPLOY.md](QUICK_DEPLOY.md)** for step-by-step guide:
 
-**Vercel / Netlify:**
-```bash
-npm run build
-# Deploy dist/ folder
-```
+1. Push to GitHub
+2. Deploy backend to Render (Free)
+3. Deploy frontend to Vercel (Free)
+4. Done! 🎉
 
-**Environment Variables:**
-```bash
-VITE_API_URL=https://your-backend-url.com/api
-```
+**Platforms:**
+- **Frontend:** Vercel (Free, auto-deploy)
+- **Backend:** Render (Free tier available)
 
-**Detailed guide:** [README.md - Deployment](README.md#-deployment)
+**Cost:** $0/month for development, $7/month for production
+
+**Detailed guide:** 
+- [QUICK_DEPLOY.md](QUICK_DEPLOY.md) - 30-minute guide
+- [DEPLOYMENT.md](DEPLOYMENT.md) - Complete guide
 
 ---
 
@@ -350,6 +352,7 @@ Now you know:
 **Quick Links:**
 
 - 📖 [README.md](README.md) - Main docs
+- 🚀 [QUICK_DEPLOY.md](QUICK_DEPLOY.md) - Deploy guide
 - 🧪 [TESTING.md](TESTING.md) - Testing
 - 📝 [CHANGELOG.md](CHANGELOG.md) - Updates
 - 🔌 [backend/README.md](backend/README.md) - API docs
