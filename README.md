@@ -1,7 +1,7 @@
 
-  # Replicate Design from Picture
+  # Campusia
 
-  This is a code bundle for Replicate Design from Picture. The original project is available at https://www.figma.com/design/lgWpPulKkypShPeNqsaP4n/Replicate-Design-from-Picture.
+  This is a code bundle for Campusia. The original project is available at https://www.figma.com/design/lgWpPulKkypShPeNqsaP4n/Campusia.
 
   ## Running the code
 

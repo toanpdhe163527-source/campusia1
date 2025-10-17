@@ -194,6 +194,20 @@ git push origin main
 - Check ADMIN_PASSWORD trong Render environment variables
 - Default: `campusia@12345`
 
+### Lỗi: "No Output Directory named 'dist' found"
+- **Nguyên nhân**: Build command không tạo thư mục dist
+
+- **Giải pháp**:
+  1. Đảm bảo có file `vercel.json` ở root project
+  2. Build command phải là: `vite build` (KHÔNG phải `tsc && vite build`)
+  3. Vercel sẽ tự động detect và build đúng
+
+### Lỗi: TypeScript errors khi build
+- **Nguyên nhân**: TypeScript strict mode
+
+- **Giải pháp**:
+  1. Build command trong Vercel: `vite build` (bỏ `tsc &&`)
+  2. Hoặc fix TypeScript errors trước khi deploy
 ---
 
 ## 📊 Cost Estimate
