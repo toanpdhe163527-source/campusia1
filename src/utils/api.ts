@@ -13,7 +13,7 @@ const getApiUrl = () => {
     return apiUrl.endsWith('/api') ? apiUrl : `${apiUrl}/api`
   }
   // Default to localhost for development
-  return 'http://localhost:5000/api'
+  return 'https://campusia1-backend.onrender.com/api'
 }
 
 const API_BASE_URL = getApiUrl()
