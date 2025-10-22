@@ -147,6 +147,8 @@ export async function getEventById(id: number): Promise<Event | null> {
 
 export async function createEvent(eventData: any): Promise<{ success: boolean; event?: Event; message?: string }> {
   try {
+    // Ensure images are included in the request
+    // Backend will handle base64 images and upload to Cloudinary
     const result = await apiRequest('/events', {
       method: 'POST',
       body: JSON.stringify(eventData)
@@ -163,6 +165,8 @@ export async function createEvent(eventData: any): Promise<{ success: boolean; e
 
 export async function updateEvent(id: number, eventData: any): Promise<{ success: boolean; event?: Event; message?: string }> {
   try {
+    // Backend will handle base64 images and upload to Cloudinary
+    // Existing Cloudinary URLs will be preserved
     const result = await apiRequest(`/events/${id}`, {
       method: 'PUT',
       body: JSON.stringify(eventData)
