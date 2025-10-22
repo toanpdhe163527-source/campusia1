@@ -4,13 +4,47 @@ Campusia đã sẵn sàng deploy lên Render.com
 
 ---
 
-## 🎯 STATUS: READY FOR DEPLOYMENT ✅
+## 🎯 STATUS: FRONTEND DEPLOYED - BACKEND NEEDS DEPLOYMENT ⚠️
 
 **Platform:** Render.com (Full Stack)  
-**Deployment type:** Web Service (Backend) + Static Site (Frontend)  
-**Cost:** $0/month (Free tier)  
-**Time to deploy:** 30 minutes  
-**Last updated:** 2025-01-17
+**Frontend Status:** ✅ Deployed tại `campusia.online`  
+**Backend Status:** ❌ Chưa deploy (cần deploy ngay)  
+**Current Issue:** Backend không chạy → Events không load  
+**Fix Required:** Deploy backend theo hướng dẫn bên dưới  
+**Time to fix:** 15 minutes  
+**Last updated:** 2025-10-18
+
+---
+
+## 🚨 URGENT: BACKEND NOT DEPLOYED
+
+### Current Situation
+- ✅ **Frontend deployed:** https://campusia.online
+- ❌ **Backend not deployed:** Missing backend API server
+- ⚠️ **Result:** Warning banner "Backend không chạy!" displayed on website
+
+### What You Need to Do Now
+
+**👉 Follow this guide:** [QUICK_FIX_BACKEND.md](QUICK_FIX_BACKEND.md)
+
+**Or read detailed guide:** [BACKEND_DEPLOY_FIX.md](BACKEND_DEPLOY_FIX.md)
+
+### Quick Summary (15 minutes)
+
+1. **Deploy Backend** (5 min)
+   - Render Dashboard → New Web Service
+   - Root Directory: `backend`
+   - Start Command: `node src/server.js`
+
+2. **Set Environment Variables** (2 min)
+   - Backend: `CORS_ORIGIN`, `JWT_SECRET`, etc.
+   - Frontend: `VITE_API_URL`
+
+3. **Rebuild & Test** (8 min)
+   - Rebuild frontend with new env var
+   - Test website → No more warning!
+
+**➡️ START NOW:** Open [QUICK_FIX_BACKEND.md](QUICK_FIX_BACKEND.md)
 
 ---
 

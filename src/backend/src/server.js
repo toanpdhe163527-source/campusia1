@@ -1,11 +1,12 @@
 // campusia-backend/src/server.js
-// Main server file for Campusia Backend API (JSON Storage - No MongoDB required)
+// Main server file for Campusia Backend API (PostgreSQL Database)
 
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const { initializeDatabase } = require('./config/db');
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -41,49 +42,24 @@ app.use((req, res, next) => {
   next();
 });
 
-// ============= JSON STORAGE SETUP =============
+// ============= DATABASE INITIALIZATION =============
 
-const dataDir = path.join(__dirname, '../data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
-
-// Initialize JSON files
-const eventsFile = path.join(dataDir, 'events.json');
-const adminFile = path.join(dataDir, 'admin.json');
-const counterFile = path.join(dataDir, 'counter.json');
-
-// Create events.json if not exists
-if (!fs.existsSync(eventsFile)) {
-  fs.writeFileSync(eventsFile, JSON.stringify([], null, 2));
-  console.log('✅ Created events.json');
-}
-
-// Create admin.json if not exists
-if (!fs.existsSync(adminFile)) {
-  const bcrypt = require('bcryptjs');
-  const defaultPassword = process.env.ADMIN_PASSWORD || 'campusia@12345';
-  const hashedPassword = bcrypt.hashSync(defaultPassword, 10);
-  
-  const adminData = {
-    username: 'admin',
-    password: hashedPassword,
-    lastLogin: null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-  
-  fs.writeFileSync(adminFile, JSON.stringify(adminData, null, 2));
-  console.log('✅ Created admin.json with default password');
-}
-
-// Create counter.json if not exists
-if (!fs.existsSync(counterFile)) {
-  fs.writeFileSync(counterFile, JSON.stringify({ eventId: 0 }, null, 2));
-  console.log('✅ Created counter.json');
-}
-
-console.log('✅ JSON storage initialized');
+// Initialize database on server start
+(async () => {
+  try {
+    if (!process.env.DATABASE_URL) {
+      console.error('❌ DATABASE_URL is not set!');
+      console.error('Please add DATABASE_URL to your environment variables.');
+      process.exit(1);
+    }
+    
+    await initializeDatabase();
+    console.log('✅ Database ready');
+  } catch (error) {
+    console.error('❌ Failed to initialize database:', error);
+    process.exit(1);
+  }
+})();
 
 // ============= ROUTES =============
 
@@ -93,7 +69,8 @@ app.get('/health', (req, res) => {
     status: 'ok',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    storage: 'JSON files'
+    storage: 'PostgreSQL Database',
+    database: process.env.DATABASE_URL ? 'Connected' : 'Not configured'
   });
 });
 
@@ -105,8 +82,8 @@ app.use('/api/events', eventRoutes);
 app.get('/', (req, res) => {
   res.json({
     message: 'Campusia API Server',
-    version: '1.0.0',
-    storage: 'JSON Files (No MongoDB required)',
+    version: '2.0.0',
+    storage: 'PostgreSQL Database',
     endpoints: {
       health: '/health',
       auth: '/api/auth/*',
@@ -140,8 +117,8 @@ app.listen(PORT, () => {
   console.log(`🚀 Campusia API Server running on port ${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🌐 CORS Origin: ${process.env.CORS_ORIGIN || process.env.FRONTEND_URL || '*'}`);
-  console.log(`💾 Storage: JSON Files (No database required)`);
-  console.log(`📁 Data directory: ${dataDir}`);
+  console.log(`💾 Storage: PostgreSQL Database`);
+  console.log(`🗄️  Database: ${process.env.DATABASE_URL ? 'Connected' : 'Not configured'}`);
 });
 
 // Handle unhandled promise rejections

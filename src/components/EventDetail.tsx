@@ -74,7 +74,6 @@ export function EventDetail({ event, onBack }: EventDetailProps) {
             </div>
             <div className="flex items-center space-x-1 text-white">
               <Users className="w-4 h-4" />
-              <span className="text-sm">{event.attendees.toLocaleString()} quan tâm</span>
             </div>
           </div>
           <h1 className="text-white text-4xl font-bold mb-2">{event.title}</h1>
@@ -155,8 +154,6 @@ export function EventDetail({ event, onBack }: EventDetailProps) {
                     <h3 className="text-lg text-gray-900">{event.organizer}</h3>
                     <p className="text-gray-600">Đơn vị tổ chức sự kiện uy tín</p>
                     <div className="flex items-center space-x-4 mt-2">
-                      <span className="text-sm text-gray-600">4.8 ⭐ (2,847 đánh giá)</span>
-                      <span className="text-sm text-gray-600">156 sự kiện đã tổ chức</span>
                     </div>
                   </div>
                 </div>

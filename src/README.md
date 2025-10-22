@@ -2,6 +2,20 @@
 
 Website bán vé sự kiện tiếng Việt với thiết kế hiện đại, light theme, purple accent colors.
 
+## 🚨 MỚI! PostgreSQL Migration (2025-10-22)
+
+Backend đã được **MIGRATE** từ JSON storage sang **PostgreSQL Database**!
+
+**📖 BẮT ĐẦU Ở ĐÂY:**
+- **Deploy backend:** [`START_HERE_POSTGRESQL.md`](START_HERE_POSTGRESQL.md) ⭐
+- **Quick guide:** [`QUICK_START_POSTGRESQL.md`](QUICK_START_POSTGRESQL.md) ⭐⭐
+- **All docs:** [`DOCUMENTATION_INDEX.md`](DOCUMENTATION_INDEX.md) 📚
+
+**Benefits:**
+- ✅ Dữ liệu PERMANENT (không mất khi restart)
+- ✅ Auto-backup hàng ngày
+- ✅ Production-ready với PostgreSQL
+
 ## ✨ Tính năng
 
 ### 🌟 Người dùng
@@ -139,7 +153,7 @@ campusia/
 ### Backend
 - **Node.js** 14+
 - **Express** 4.18
-- **JSON Storage** (no database needed!)
+- **PostgreSQL Database** 🆕 (persistent storage)
 - **JWT** authentication
 - **Bcrypt** password hashing
 - **CORS** enabled
@@ -319,17 +333,31 @@ npm run dev
 
 ## 📊 Data Storage
 
-Tất cả data được lưu trong JSON files:
+### **🆕 PostgreSQL Database (Production)**
+
+Data được lưu trong **PostgreSQL database** (persistent):
+
+```sql
+Tables:
+├── events          # Danh sách sự kiện
+└── admin           # Admin credentials
+```
+
+**Benefits:**
+- ✅ Data không bao giờ mất
+- ✅ Auto-backup hàng ngày (Render Free tier)
+- ✅ ACID transactions
+- ✅ Scalable
+
+**Docs:** Xem [`POSTGRESQL_MIGRATION.md`](POSTGRESQL_MIGRATION.md)
+
+### **Legacy: JSON Files (Local Dev)**
 
 ```
 backend/data/
-├── events.json      # Danh sách sự kiện
-└── admin.json       # Admin credentials
+├── events.json      # (Legacy - not used in production)
+└── admin.json       # (Legacy - not used in production)
 ```
-
-**Backup:** Chỉ cần copy folder `backend/data/`
-
-**Restore:** Paste lại vào `backend/data/`
 
 ## 🎨 Customization
 
@@ -371,14 +399,27 @@ const categories = [
 
 ## 📚 Documentation Files
 
+### **🆕 PostgreSQL Migration (START HERE):**
+
+| File | Mục đích |
+|------|----------|
+| **[START_HERE_POSTGRESQL.md](START_HERE_POSTGRESQL.md)** | ⭐ Entry point cho PostgreSQL |
+| **[QUICK_START_POSTGRESQL.md](QUICK_START_POSTGRESQL.md)** | ⭐⭐ 5 bước deploy (15 phút) |
+| [POSTGRESQL_MIGRATION.md](POSTGRESQL_MIGRATION.md) | Chi tiết migration + troubleshooting |
+| [FINAL_MIGRATION_GUIDE.md](FINAL_MIGRATION_GUIDE.md) | Complete guide |
+| [MIGRATION_SUMMARY.md](MIGRATION_SUMMARY.md) | Tổng kết changes |
+| **[DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md)** | 📚 Index tất cả docs |
+
+### **Original Docs:**
+
 | File | Mục đích |
 |------|----------|
 | [README.md](README.md) | Main documentation (👈 you are here) |
-| [RENDER_FULLSTACK.md](RENDER_FULLSTACK.md) | 🚀 Deploy lên Internet (30 phút) |
-| [DEPLOYMENT.md](DEPLOYMENT.md) | Deployment details & best practices |
-| [TESTING.md](TESTING.md) | Testing guide & scenarios |
-| [CHANGELOG.md](CHANGELOG.md) | Bugfixes & updates |
+| [RENDER_FULLSTACK.md](RENDER_FULLSTACK.md) | Deploy lên Internet (legacy) |
+| [START_HERE_FIX.md](START_HERE_FIX.md) | Fix connection issues |
+| [TESTING.md](TESTING.md) | Testing guide |
 | [backend/README.md](backend/README.md) | Backend API docs |
+| [backend/LOCAL_DEVELOPMENT.md](backend/LOCAL_DEVELOPMENT.md) | 🆕 Local dev setup |
 
 ## 🤝 Contributing
 
@@ -454,7 +495,7 @@ localStorage.getItem('admin_token')
 - [ ] Event analytics
 
 ### v2.0 (Future)
-- [ ] MongoDB migration
+- [x] PostgreSQL migration ✅ **DONE (2025-10-22)**
 - [ ] Mobile app
 - [ ] Multi-language
 - [ ] Advanced analytics
@@ -482,5 +523,7 @@ npm install && npm run dev
 
 **Made with ❤️ for Campusia**
 
-**Version:** 1.0.0  
-**Last Updated:** 2025-01-16
+**Version:** 2.0.0 (PostgreSQL Migration)  
+**Last Updated:** 2025-10-22
+
+**🎊 Latest:** Backend migrated to PostgreSQL! See [`START_HERE_POSTGRESQL.md`](START_HERE_POSTGRESQL.md)

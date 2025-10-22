@@ -13,7 +13,7 @@ const { saveBase64Image } = require('../middleware/upload');
  */
 router.get('/', async (req, res) => {
   try {
-    const events = Event.getAll();
+    const events = await Event.getAll();
     
     res.json({
       success: true,
@@ -34,7 +34,7 @@ router.get('/', async (req, res) => {
  */
 router.get('/:id', async (req, res) => {
   try {
-    const event = Event.getById(req.params.id);
+    const event = await Event.getById(req.params.id);
 
     if (!event) {
       return res.status(404).json({
@@ -100,7 +100,7 @@ router.post('/', verifyToken, async (req, res) => {
       featured: eventData.featured || false
     };
 
-    const event = Event.create(newEventData);
+    const event = await Event.create(newEventData);
 
     res.status(201).json({
       success: true,
@@ -123,7 +123,7 @@ router.post('/', verifyToken, async (req, res) => {
  */
 router.put('/:id', verifyToken, async (req, res) => {
   try {
-    const event = Event.update(req.params.id, req.body);
+    const event = await Event.update(req.params.id, req.body);
 
     res.json({
       success: true,
@@ -146,7 +146,7 @@ router.put('/:id', verifyToken, async (req, res) => {
  */
 router.delete('/:id', verifyToken, async (req, res) => {
   try {
-    Event.delete(req.params.id);
+    await Event.delete(req.params.id);
 
     res.json({
       success: true,
@@ -168,7 +168,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
  */
 router.post('/:id/toggle-featured', verifyToken, async (req, res) => {
   try {
-    const event = Event.toggleFeatured(req.params.id);
+    const event = await Event.toggleFeatured(req.params.id);
 
     res.json({
       success: true,
@@ -191,7 +191,7 @@ router.post('/:id/toggle-featured', verifyToken, async (req, res) => {
  */
 router.get('/type/:eventType', async (req, res) => {
   try {
-    const events = Event.getByType(req.params.eventType);
+    const events = await Event.getByType(req.params.eventType);
     
     res.json({
       success: true,
@@ -212,7 +212,7 @@ router.get('/type/:eventType', async (req, res) => {
  */
 router.get('/featured/list', async (req, res) => {
   try {
-    const events = Event.getFeatured();
+    const events = await Event.getFeatured();
     
     res.json({
       success: true,

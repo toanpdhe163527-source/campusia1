@@ -26,7 +26,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Find admin account
-    const admin = Admin.findByUsername('admin');
+    const admin = await Admin.findByUsername('admin');
 
     if (!admin) {
       return res.status(401).json({
@@ -55,7 +55,7 @@ router.post('/login', async (req, res) => {
     );
 
     // Update last login
-    Admin.updateLastLogin();
+    await Admin.updateLastLogin('admin');
 
     res.json({
       success: true,
@@ -108,7 +108,7 @@ router.post('/change-password', verifyToken, async (req, res) => {
       });
     }
 
-    await Admin.changePassword(currentPassword, newPassword);
+    await Admin.changePassword(req.user.username, currentPassword, newPassword);
 
     res.json({
       success: true,

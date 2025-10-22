@@ -1,47 +1,7 @@
 // campusia-backend/src/models/Event.js
-// Event model using JSON file storage (No MongoDB)
+// Event model using PostgreSQL Database
 
-const fs = require('fs');
-const path = require('path');
-
-const dataDir = path.join(__dirname, '../../data');
-const eventsFile = path.join(dataDir, 'events.json');
-const counterFile = path.join(dataDir, 'counter.json');
-
-// Ensure data directory exists
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
-
-// Helper function to read events
-function readEvents() {
-  try {
-    const data = fs.readFileSync(eventsFile, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    return [];
-  }
-}
-
-// Helper function to write events
-function writeEvents(events) {
-  fs.writeFileSync(eventsFile, JSON.stringify(events, null, 2));
-}
-
-// Helper function to get next ID
-function getNextId() {
-  try {
-    const data = fs.readFileSync(counterFile, 'utf8');
-    const counter = JSON.parse(data);
-    counter.eventId += 1;
-    fs.writeFileSync(counterFile, JSON.stringify(counter, null, 2));
-    return counter.eventId;
-  } catch (error) {
-    const newCounter = { eventId: 1 };
-    fs.writeFileSync(counterFile, JSON.stringify(newCounter, null, 2));
-    return 1;
-  }
-}
+const { query } = require('../config/db');
 
 // Validate event data
 function validateEvent(data) {
@@ -68,119 +28,270 @@ function validateEvent(data) {
   return true;
 }
 
+// Convert database row to frontend format (snake_case -> camelCase)
+function rowToEvent(row) {
+  if (!row) return null;
+  
+  return {
+    id: row.id,
+    title: row.title,
+    subtitle: row.subtitle || '',
+    description: row.description,
+    date: row.date,
+    time: row.time,
+    location: row.location,
+    venue: row.venue,
+    image: row.image,
+    images: row.images || [],
+    category: row.category,
+    eventType: row.event_type,
+    organizer: row.organizer,
+    rating: parseFloat(row.rating) || 4.5,
+    attendees: row.attendees || 0,
+    highlights: row.highlights || [],
+    registrationUrl: row.registration_url,
+    featured: row.featured || false,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+}
+
 // Event class with CRUD methods
 class Event {
   // Get all events
-  static getAll() {
-    return readEvents();
+  static async getAll() {
+    try {
+      const result = await query(
+        'SELECT * FROM events ORDER BY created_at DESC'
+      );
+      return result.rows.map(rowToEvent);
+    } catch (error) {
+      console.error('Error getting all events:', error);
+      throw error;
+    }
   }
   
-  // Get event by ID (numeric)
-  static getById(id) {
-    const events = readEvents();
-    return events.find(event => event.id === parseInt(id));
+  // Get event by ID
+  static async getById(id) {
+    try {
+      const result = await query(
+        'SELECT * FROM events WHERE id = $1',
+        [parseInt(id)]
+      );
+      return rowToEvent(result.rows[0]);
+    } catch (error) {
+      console.error('Error getting event by ID:', error);
+      throw error;
+    }
   }
   
   // Get events by type
-  static getByType(eventType) {
-    const events = readEvents();
-    return events.filter(event => event.eventType === eventType);
+  static async getByType(eventType) {
+    try {
+      const result = await query(
+        'SELECT * FROM events WHERE event_type = $1 ORDER BY created_at DESC',
+        [eventType]
+      );
+      return result.rows.map(rowToEvent);
+    } catch (error) {
+      console.error('Error getting events by type:', error);
+      throw error;
+    }
   }
   
   // Get featured events
-  static getFeatured() {
-    const events = readEvents();
-    return events.filter(event => event.featured === true);
+  static async getFeatured() {
+    try {
+      const result = await query(
+        'SELECT * FROM events WHERE featured = true ORDER BY created_at DESC'
+      );
+      return result.rows.map(rowToEvent);
+    } catch (error) {
+      console.error('Error getting featured events:', error);
+      throw error;
+    }
   }
   
   // Create new event
-  static create(data) {
+  static async create(data) {
     validateEvent(data);
     
-    const events = readEvents();
-    const id = getNextId();
-    
-    const newEvent = {
-      id,
-      title: data.title,
-      subtitle: data.subtitle || '',
-      description: data.description,
-      date: data.date,
-      time: data.time,
-      location: data.location,
-      venue: data.venue,
-      image: data.image || (data.images && data.images[0]) || 'https://via.placeholder.com/800x400',
-      images: data.images || [],
-      category: data.category,
-      eventType: data.eventType,
-      organizer: data.organizer,
-      rating: data.rating || 4.5,
-      attendees: data.attendees || 0,
-      highlights: data.highlights || [],
-      registrationUrl: data.registrationUrl,
-      featured: data.featured || false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    
-    events.push(newEvent);
-    writeEvents(events);
-    
-    return newEvent;
+    try {
+      const result = await query(
+        `INSERT INTO events (
+          title, subtitle, description, date, time, location, venue,
+          image, images, category, event_type, organizer, rating,
+          attendees, highlights, registration_url, featured
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+        RETURNING *`,
+        [
+          data.title,
+          data.subtitle || '',
+          data.description,
+          data.date,
+          data.time,
+          data.location,
+          data.venue,
+          data.image || (data.images && data.images[0]) || 'https://via.placeholder.com/800x400',
+          data.images || [],
+          data.category,
+          data.eventType,
+          data.organizer,
+          data.rating || 4.5,
+          data.attendees || 0,
+          data.highlights || [],
+          data.registrationUrl,
+          data.featured || false
+        ]
+      );
+      
+      return rowToEvent(result.rows[0]);
+    } catch (error) {
+      console.error('Error creating event:', error);
+      throw error;
+    }
   }
   
   // Update event
-  static update(id, data) {
-    const events = readEvents();
-    const index = events.findIndex(event => event.id === parseInt(id));
-    
-    if (index === -1) {
-      throw new Error('Event not found');
+  static async update(id, data) {
+    try {
+      // Get existing event
+      const existing = await this.getById(id);
+      if (!existing) {
+        throw new Error('Event not found');
+      }
+      
+      // Build update query dynamically based on provided fields
+      const updates = [];
+      const values = [];
+      let paramCount = 1;
+      
+      if (data.title !== undefined) {
+        updates.push(`title = $${paramCount++}`);
+        values.push(data.title);
+      }
+      if (data.subtitle !== undefined) {
+        updates.push(`subtitle = $${paramCount++}`);
+        values.push(data.subtitle);
+      }
+      if (data.description !== undefined) {
+        updates.push(`description = $${paramCount++}`);
+        values.push(data.description);
+      }
+      if (data.date !== undefined) {
+        updates.push(`date = $${paramCount++}`);
+        values.push(data.date);
+      }
+      if (data.time !== undefined) {
+        updates.push(`time = $${paramCount++}`);
+        values.push(data.time);
+      }
+      if (data.location !== undefined) {
+        updates.push(`location = $${paramCount++}`);
+        values.push(data.location);
+      }
+      if (data.venue !== undefined) {
+        updates.push(`venue = $${paramCount++}`);
+        values.push(data.venue);
+      }
+      if (data.image !== undefined) {
+        updates.push(`image = $${paramCount++}`);
+        values.push(data.image);
+      }
+      if (data.images !== undefined) {
+        updates.push(`images = $${paramCount++}`);
+        values.push(data.images);
+      }
+      if (data.category !== undefined) {
+        updates.push(`category = $${paramCount++}`);
+        values.push(data.category);
+      }
+      if (data.eventType !== undefined) {
+        updates.push(`event_type = $${paramCount++}`);
+        values.push(data.eventType);
+      }
+      if (data.organizer !== undefined) {
+        updates.push(`organizer = $${paramCount++}`);
+        values.push(data.organizer);
+      }
+      if (data.rating !== undefined) {
+        updates.push(`rating = $${paramCount++}`);
+        values.push(data.rating);
+      }
+      if (data.attendees !== undefined) {
+        updates.push(`attendees = $${paramCount++}`);
+        values.push(data.attendees);
+      }
+      if (data.highlights !== undefined) {
+        updates.push(`highlights = $${paramCount++}`);
+        values.push(data.highlights);
+      }
+      if (data.registrationUrl !== undefined) {
+        updates.push(`registration_url = $${paramCount++}`);
+        values.push(data.registrationUrl);
+      }
+      if (data.featured !== undefined) {
+        updates.push(`featured = $${paramCount++}`);
+        values.push(data.featured);
+      }
+      
+      // Always update updated_at
+      updates.push(`updated_at = CURRENT_TIMESTAMP`);
+      
+      // Add ID as last parameter
+      values.push(parseInt(id));
+      
+      const result = await query(
+        `UPDATE events SET ${updates.join(', ')} WHERE id = $${paramCount} RETURNING *`,
+        values
+      );
+      
+      return rowToEvent(result.rows[0]);
+    } catch (error) {
+      console.error('Error updating event:', error);
+      throw error;
     }
-    
-    // Don't allow changing ID
-    delete data.id;
-    
-    // Update event
-    events[index] = {
-      ...events[index],
-      ...data,
-      updatedAt: new Date().toISOString()
-    };
-    
-    writeEvents(events);
-    return events[index];
   }
   
   // Delete event
-  static delete(id) {
-    const events = readEvents();
-    const index = events.findIndex(event => event.id === parseInt(id));
-    
-    if (index === -1) {
-      throw new Error('Event not found');
+  static async delete(id) {
+    try {
+      const result = await query(
+        'DELETE FROM events WHERE id = $1 RETURNING id',
+        [parseInt(id)]
+      );
+      
+      if (result.rows.length === 0) {
+        throw new Error('Event not found');
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      throw error;
     }
-    
-    events.splice(index, 1);
-    writeEvents(events);
-    
-    return true;
   }
   
   // Toggle featured status
-  static toggleFeatured(id) {
-    const events = readEvents();
-    const index = events.findIndex(event => event.id === parseInt(id));
-    
-    if (index === -1) {
-      throw new Error('Event not found');
+  static async toggleFeatured(id) {
+    try {
+      const result = await query(
+        `UPDATE events 
+         SET featured = NOT featured, updated_at = CURRENT_TIMESTAMP 
+         WHERE id = $1 
+         RETURNING *`,
+        [parseInt(id)]
+      );
+      
+      if (result.rows.length === 0) {
+        throw new Error('Event not found');
+      }
+      
+      return rowToEvent(result.rows[0]);
+    } catch (error) {
+      console.error('Error toggling featured status:', error);
+      throw error;
     }
-    
-    events[index].featured = !events[index].featured;
-    events[index].updatedAt = new Date().toISOString();
-    
-    writeEvents(events);
-    return events[index];
   }
 }
 
