@@ -87,14 +87,13 @@ export function EventDetail({ event, onBack, isUserLoggedIn = false, onLoginRequ
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
         
-        {/* Back button */}
+       {/* Back button */}
         <Button
           variant="ghost"
-          size="icon"
-          className="absolute top-4 left-4 text-white hover:bg-white/20"
+          className="absolute top-6 left-6 h-12 w-12 bg-black/50 hover:bg-black/70 text-white rounded-full backdrop-blur-sm"
           onClick={onBack}
         >
-          <ArrowLeft className="w-6 h-6" />
+          <ArrowLeft className="w-7 h-7" />
         </Button>
 
         {/* Share and favorite */}
