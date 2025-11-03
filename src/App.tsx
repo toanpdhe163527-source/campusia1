@@ -373,7 +373,7 @@ export default function App() {
             <div className="flex items-center justify-center space-x-4 mb-4">
               <h2 className="text-2xl text-gray-900">Liên hệ với</h2>
               <div className="flex items-center space-x-2">
-                <img src="logo.jpg" alt="Campusia" className="h-12" />
+                <img src={logo} alt="Campusia" className="h-12 w-auto rounded-md" />
               </div>
             </div>
             <p className="text-gray-700 max-w-2xl mx-auto">
