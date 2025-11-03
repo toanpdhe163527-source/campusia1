@@ -12,7 +12,7 @@ import { Event } from './data/events'
 import { filterEvents, sortEvents } from './utils/filterEvents'
 import * as api from './utils/api'
 import { initializeDatabase } from './utils/initializeData'
-
+import logo from './logo/logo.jpg'
 type ViewState = 'home' | 'eventDetail' | 'createEvent' | 'userLogin' | 'adminLogin' | 'admin'
 
 export default function App() {
@@ -373,7 +373,7 @@ export default function App() {
             <div className="flex items-center justify-center space-x-4 mb-4">
               <h2 className="text-2xl text-gray-900">Liên hệ với</h2>
               <div className="flex items-center space-x-2">
-                <img src="C:\Users\Toan\Desktop\campusia1\src\logo\logo.jpg" alt="Campusia" className="h-12" />
+                <img src="logo.jpg" alt="Campusia" className="h-12" />
               </div>
             </div>
             <p className="text-gray-700 max-w-2xl mx-auto">
