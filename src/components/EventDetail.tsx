@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ArrowLeft, Calendar, Clock, MapPin, Share2, Heart, Star, Users, Music, Check } from 'lucide-react'
+import { ArrowLeft, Calendar, Clock, MapPin, Share2, Heart, Star, Users, Music, Check, ExternalLink } from 'lucide-react'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
 import { Card, CardContent } from './ui/card'
@@ -221,9 +221,14 @@ export function EventDetail({ event, onBack, isUserLoggedIn = false, onLoginRequ
                     </p>
                   ) : hasJoined ? (
                     <div className="p-3 bg-green-50 rounded-lg mb-4">
-                      <div className="flex items-center justify-center space-x-2 text-green-700">
-                        <Check className="w-5 h-5" />
-                        <span>Bạn đã đăng ký tham gia sự kiện này</span>
+                      <div className="flex flex-col items-center space-y-2">
+                        <div className="flex items-center space-x-2 text-green-700">
+                          <Check className="w-5 h-5" />
+                          <span>Bạn đã đăng ký tham gia sự kiện này</span>
+                        </div>
+                        <p className="text-sm text-green-600">
+                          Vui lòng điền form đăng ký bên dưới để hoàn tất
+                        </p>
                       </div>
                     </div>
                   ) : (
@@ -240,28 +245,42 @@ export function EventDetail({ event, onBack, isUserLoggedIn = false, onLoginRequ
                 )}
 
                 <div className="space-y-3">
-                  <Button 
-                    className={`w-full ${
-                      hasJoined 
-                        ? 'bg-green-600 hover:bg-green-700' 
-                        : 'bg-purple-600 hover:bg-purple-700'
-                    } text-white`}
-                    onClick={handleJoinEvent}
-                    disabled={isJoining || hasJoined}
-                  >
-                    {isJoining ? (
-                      'Đang xử lý...'
-                    ) : hasJoined ? (
-                      <span className="flex items-center justify-center space-x-2">
-                        <Check className="w-4 h-4" />
-                        <span>Đã tham gia</span>
-                      </span>
-                    ) : !isUserLoggedIn ? (
-                      'Đăng nhập để tham gia'
-                    ) : (
-                      'Đăng ký tham gia'
-                    )}
-                  </Button>
+                  {!hasJoined ? (
+                    <Button 
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                      onClick={handleJoinEvent}
+                      disabled={isJoining}
+                    >
+                      {isJoining ? (
+                        'Đang xử lý...'
+                      ) : !isUserLoggedIn ? (
+                        'Đăng nhập để tham gia'
+                      ) : (
+                        'Đăng ký tham gia'
+                      )}
+                    </Button>
+                  ) : (
+                    <>
+                      <Button 
+                        className="w-full bg-green-600 hover:bg-green-700 text-white"
+                        disabled
+                      >
+                        <span className="flex items-center justify-center space-x-2">
+                          <Check className="w-4 h-4" />
+                          <span>Đã tham gia</span>
+                        </span>
+                      </Button>
+                      <Button 
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                        onClick={() => window.open(event.registrationUrl, '_blank')}
+                      >
+                        <span className="flex items-center justify-center space-x-2">
+                          <ExternalLink className="w-4 h-4" />
+                          <span>Mở form đăng ký</span>
+                        </span>
+                      </Button>
+                    </>
+                  )}
                 </div>
 
                 <div className="mt-4 p-3 bg-purple-50 rounded-lg">
