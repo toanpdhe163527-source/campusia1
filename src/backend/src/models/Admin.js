@@ -1,42 +1,24 @@
 // campusia-backend/src/models/Admin.js
-// Admin model using JSON file storage (No MongoDB)
+// Admin model using PostgreSQL Database
 
-const fs = require('fs');
-const path = require('path');
+const { query } = require('../config/db');
 const bcrypt = require('bcryptjs');
-
-const dataDir = path.join(__dirname, '../../data');
-const adminFile = path.join(dataDir, 'admin.json');
-
-// Ensure data directory exists
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
-
-// Helper function to read admin data
-function readAdmin() {
-  try {
-    const data = fs.readFileSync(adminFile, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    return null;
-  }
-}
-
-// Helper function to write admin data
-function writeAdmin(adminData) {
-  fs.writeFileSync(adminFile, JSON.stringify(adminData, null, 2));
-}
 
 // Admin class
 class Admin {
   // Find admin by username
-  static findByUsername(username) {
-    const admin = readAdmin();
-    if (admin && admin.username === username) {
-      return admin;
+  static async findByUsername(username) {
+    try {
+      const result = await query(
+        'SELECT * FROM admin WHERE username = $1',
+        [username]
+      );
+      
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error('Error finding admin by username:', error);
+      throw error;
     }
-    return null;
   }
   
   // Compare password
@@ -45,55 +27,77 @@ class Admin {
   }
   
   // Update last login
-  static updateLastLogin() {
-    const admin = readAdmin();
-    if (admin) {
-      admin.lastLogin = new Date().toISOString();
-      admin.updatedAt = new Date().toISOString();
-      writeAdmin(admin);
+  static async updateLastLogin(username) {
+    try {
+      const result = await query(
+        `UPDATE admin 
+         SET last_login = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP 
+         WHERE username = $1 
+         RETURNING *`,
+        [username]
+      );
+      
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error('Error updating last login:', error);
+      throw error;
     }
-    return admin;
   }
   
   // Change password
-  static async changePassword(currentPassword, newPassword) {
-    const admin = readAdmin();
-    
-    if (!admin) {
-      throw new Error('Admin not found');
+  static async changePassword(username, currentPassword, newPassword) {
+    try {
+      const admin = await this.findByUsername(username);
+      
+      if (!admin) {
+        throw new Error('Admin not found');
+      }
+      
+      // Verify current password
+      const isValid = await bcrypt.compare(currentPassword, admin.password);
+      if (!isValid) {
+        throw new Error('Current password is incorrect');
+      }
+      
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      
+      await query(
+        `UPDATE admin 
+         SET password = $1, updated_at = CURRENT_TIMESTAMP 
+         WHERE username = $2`,
+        [hashedPassword, username]
+      );
+      
+      return true;
+    } catch (error) {
+      console.error('Error changing password:', error);
+      throw error;
     }
-    
-    // Verify current password
-    const isValid = await bcrypt.compare(currentPassword, admin.password);
-    if (!isValid) {
-      throw new Error('Current password is incorrect');
-    }
-    
-    // Hash new password
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    admin.password = hashedPassword;
-    admin.updatedAt = new Date().toISOString();
-    
-    writeAdmin(admin);
-    return true;
   }
   
   // Initialize admin (if not exists)
   static async initialize(password = 'campusia@12345') {
-    if (!fs.existsSync(adminFile)) {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const adminData = {
-        username: 'admin',
-        password: hashedPassword,
-        lastLogin: null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      writeAdmin(adminData);
-      console.log('✅ Admin initialized with default password');
-      return adminData;
+    try {
+      const existing = await this.findByUsername('admin');
+      
+      if (!existing) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        const result = await query(
+          'INSERT INTO admin (username, password) VALUES ($1, $2) RETURNING *',
+          ['admin', hashedPassword]
+        );
+        
+        console.log('✅ Admin initialized with default password');
+        return result.rows[0];
+      }
+      
+      return existing;
+    } catch (error) {
+      console.error('Error initializing admin:', error);
+      throw error;
     }
-    return readAdmin();
   }
 }
 

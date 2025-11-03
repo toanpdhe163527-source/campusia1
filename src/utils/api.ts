@@ -20,17 +20,35 @@ const API_BASE_URL = getApiUrl()
 
 // Get auth token from localStorage
 function getAuthToken(): string | null {
-  return localStorage.getItem('admin_token')
+  return localStorage.getItem('admin_token') || localStorage.getItem('user_token')
 }
 
-// Save auth token to localStorage
-function saveAuthToken(token: string) {
+// Save admin token to localStorage
+function saveAdminToken(token: string) {
   localStorage.setItem('admin_token', token)
+  localStorage.removeItem('user_token')
+}
+
+// Save user token to localStorage
+function saveUserToken(token: string) {
+  localStorage.setItem('user_token', token)
+  localStorage.removeItem('admin_token')
 }
 
 // Remove auth token from localStorage
 export function clearAuthToken() {
   localStorage.removeItem('admin_token')
+  localStorage.removeItem('user_token')
+}
+
+// Check if current user is admin
+export function isAdmin(): boolean {
+  return localStorage.getItem('admin_token') !== null
+}
+
+// Check if current user is logged in
+export function isUserLoggedIn(): boolean {
+  return localStorage.getItem('user_token') !== null
 }
 
 // Make API request with auth
@@ -65,7 +83,8 @@ async function apiRequest(endpoint: string, options: RequestInit = {}) {
 
 // ============= AUTH API =============
 
-export async function login(password: string): Promise<{ success: boolean; token?: string; message?: string }> {
+// Admin login
+export async function adminLogin(password: string): Promise<{ success: boolean; token?: string; message?: string }> {
   try {
     const result = await apiRequest('/auth/login', {
       method: 'POST',
@@ -73,12 +92,56 @@ export async function login(password: string): Promise<{ success: boolean; token
     })
     
     if (result.success && result.token) {
-      saveAuthToken(result.token)
+      saveAdminToken(result.token)
     }
     
     return result
   } catch (error) {
-    console.error('Login error:', error)
+    console.error('Admin login error:', error)
+    return { 
+      success: false, 
+      message: error instanceof Error ? error.message : 'Lỗi đăng nhập admin' 
+    }
+  }
+}
+
+// User registration
+export async function userRegister(name: string, email: string): Promise<{ success: boolean; token?: string; user?: any; message?: string }> {
+  try {
+    const result = await apiRequest('/users/register', {
+      method: 'POST',
+      body: JSON.stringify({ name, email })
+    })
+    
+    if (result.success && result.token) {
+      saveUserToken(result.token)
+    }
+    
+    return result
+  } catch (error) {
+    console.error('User register error:', error)
+    return { 
+      success: false, 
+      message: error instanceof Error ? error.message : 'Lỗi đăng ký' 
+    }
+  }
+}
+
+// User login
+export async function userLogin(email: string): Promise<{ success: boolean; token?: string; user?: any; message?: string }> {
+  try {
+    const result = await apiRequest('/users/login', {
+      method: 'POST',
+      body: JSON.stringify({ email })
+    })
+    
+    if (result.success && result.token) {
+      saveUserToken(result.token)
+    }
+    
+    return result
+  } catch (error) {
+    console.error('User login error:', error)
     return { 
       success: false, 
       message: error instanceof Error ? error.message : 'Lỗi đăng nhập' 
@@ -147,6 +210,8 @@ export async function getEventById(id: number): Promise<Event | null> {
 
 export async function createEvent(eventData: any): Promise<{ success: boolean; event?: Event; message?: string }> {
   try {
+    // Ensure images are included in the request
+    // Backend will handle base64 images and upload to Cloudinary
     const result = await apiRequest('/events', {
       method: 'POST',
       body: JSON.stringify(eventData)
@@ -163,6 +228,8 @@ export async function createEvent(eventData: any): Promise<{ success: boolean; e
 
 export async function updateEvent(id: number, eventData: any): Promise<{ success: boolean; event?: Event; message?: string }> {
   try {
+    // Backend will handle base64 images and upload to Cloudinary
+    // Existing Cloudinary URLs will be preserved
     const result = await apiRequest(`/events/${id}`, {
       method: 'PUT',
       body: JSON.stringify(eventData)
@@ -203,6 +270,95 @@ export async function toggleEventFeatured(id: number): Promise<{ success: boolea
     return { 
       success: false, 
       message: error instanceof Error ? error.message : 'Lỗi cập nhật trạng thái' 
+    }
+  }
+}
+
+// ============= USER API =============
+
+export async function getUserInfo(): Promise<{ success: boolean; user?: any; message?: string }> {
+  try {
+    const result = await apiRequest('/users/me')
+    return result
+  } catch (error) {
+    console.error('Get user info error:', error)
+    return { 
+      success: false, 
+      message: error instanceof Error ? error.message : 'Lỗi lấy thông tin user' 
+    }
+  }
+}
+
+export async function joinEvent(eventId: number): Promise<{ success: boolean; message?: string }> {
+  try {
+    const result = await apiRequest(`/users/join-event/${eventId}`, {
+      method: 'POST'
+    })
+    return result
+  } catch (error) {
+    console.error('Join event error:', error)
+    return { 
+      success: false, 
+      message: error instanceof Error ? error.message : 'Lỗi tham gia sự kiện' 
+    }
+  }
+}
+
+export async function getUserEvents(): Promise<{ success: boolean; events?: any[]; message?: string }> {
+  try {
+    const result = await apiRequest('/users/my-events')
+    return result
+  } catch (error) {
+    console.error('Get user events error:', error)
+    return { 
+      success: false,
+      events: [],
+      message: error instanceof Error ? error.message : 'Lỗi lấy danh sách sự kiện' 
+    }
+  }
+}
+
+// ============= ADMIN USER MANAGEMENT API =============
+
+export async function getAllUsers(): Promise<{ success: boolean; users?: any[]; total?: number; message?: string }> {
+  try {
+    const result = await apiRequest('/admin/users')
+    return result
+  } catch (error) {
+    console.error('Get all users error:', error)
+    return { 
+      success: false,
+      users: [],
+      total: 0,
+      message: error instanceof Error ? error.message : 'Lỗi lấy danh sách thành viên' 
+    }
+  }
+}
+
+export async function getUserParticipation(userId: number): Promise<{ success: boolean; events?: any[]; message?: string }> {
+  try {
+    const result = await apiRequest(`/admin/users/${userId}/events`)
+    return result
+  } catch (error) {
+    console.error('Get user participation error:', error)
+    return { 
+      success: false,
+      events: [],
+      message: error instanceof Error ? error.message : 'Lỗi lấy lịch sử tham gia' 
+    }
+  }
+}
+
+export async function getAdminStats(): Promise<{ success: boolean; stats?: any; message?: string }> {
+  try {
+    const result = await apiRequest('/admin/stats')
+    return result
+  } catch (error) {
+    console.error('Get admin stats error:', error)
+    return { 
+      success: false,
+      stats: {},
+      message: error instanceof Error ? error.message : 'Lỗi lấy thống kê' 
     }
   }
 }

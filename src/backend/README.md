@@ -1,185 +1,297 @@
-# Campusia Backend
+# 🚀 Campusia Backend API
 
-Backend API cho Campusia Event Platform sử dụng JSON File Storage - không cần MongoDB!
+Backend API cho hệ thống quản lý sự kiện Campusia, sử dụng **PostgreSQL Database**.
 
-## 🚀 Quick Start
+---
+
+## ✨ Tính năng
+
+- ✅ **PostgreSQL Database** - Dữ liệu persistent, không bao giờ mất
+- ✅ **Authentication với JWT** - Bảo mật admin dashboard
+- ✅ **CRUD operations cho Events** - Quản lý sự kiện đầy đủ
+- ✅ **Upload và serve images** - Base64 và URL support
+- ✅ **Auto-initialize database** - Setup tables tự động
+- ✅ **CORS configuration** - Tích hợp frontend seamless
+- ✅ **Production-ready** - Deploy trên Render
+
+---
+
+## 📋 Yêu cầu
+
+- Node.js >= 14.0.0
+- npm >= 6.0.0
+- PostgreSQL database (Render Free tier hoặc local)
+
+---
+
+## 🔧 Cài đặt
+
+### **Local Development:**
 
 ```bash
-# 1. Install dependencies
+# 1. Clone repository và vào thư mục backend
+cd backend
+
+# 2. Cài đặt dependencies
 npm install
 
-# 2. Copy environment file
+# 3. Tạo file .env
 cp .env.example .env
 
-# 3. Run server
+# 4. Chỉnh sửa .env với PostgreSQL connection
+nano .env
+```
+
+### **File `.env` cần có:**
+
+```env
+DATABASE_URL=postgresql://username:password@localhost:5432/campusia_events
+PORT=5000
+NODE_ENV=development
+JWT_SECRET=your-secret-key
+ADMIN_PASSWORD=campusia@12345
+CORS_ORIGIN=http://localhost:5173
+```
+
+---
+
+## ▶️ Chạy Server
+
+### **Development:**
+```bash
 npm run dev
 ```
 
-Server sẽ chạy tại: `http://localhost:5000`
+### **Production:**
+```bash
+npm start
+```
 
-## 📦 Tech Stack
+Server chạy tại: `http://localhost:5000`
 
-- **Node.js 14+** - Runtime
-- **Express 4** - Web framework
-- **JSON Files** - Data storage (No database!)
-- **JWT** - Authentication
-- **Bcrypt** - Password hashing
-- **Multer** - File upload
+---
 
-## 📁 Project Structure
+## 🗄️ Database Setup
+
+### **Option 1: Render PostgreSQL (Khuyến nghị cho production)**
+
+Xem hướng dẫn chi tiết trong: **`POSTGRESQL_MIGRATION.md`**
+
+**TL;DR:**
+1. Tạo PostgreSQL database trên Render
+2. Copy "Internal Database URL"
+3. Add vào environment variable `DATABASE_URL`
+4. Database tự động initialize khi server start
+
+### **Option 2: Local PostgreSQL**
+
+```bash
+# Install PostgreSQL
+# macOS: brew install postgresql
+# Ubuntu: sudo apt-get install postgresql
+
+# Create database
+createdb campusia_events
+
+# Update .env
+DATABASE_URL=postgresql://localhost:5432/campusia_events
+```
+
+### **Seed Sample Data (Optional):**
+
+```bash
+npm run seed
+```
+
+Lệnh này sẽ tạo 5 sự kiện mẫu trong database.
+
+---
+
+## 📡 API Endpoints
+
+### **Health Check**
+- `GET /health` - Kiểm tra trạng thái server và database
+
+### **Authentication**
+- `POST /api/auth/login` - Đăng nhập admin
+  ```json
+  { "password": "campusia@12345" }
+  ```
+- `GET /api/auth/verify` - Xác thực JWT token
+- `POST /api/auth/change-password` - Đổi mật khẩu (requires auth)
+
+### **Events**
+- `GET /api/events` - Lấy tất cả sự kiện
+- `GET /api/events/:id` - Lấy chi tiết sự kiện
+- `GET /api/events/type/:eventType` - Lấy sự kiện theo loại (CLB/Workshop/Exe)
+- `GET /api/events/featured/list` - Lấy sự kiện nổi bật
+- `POST /api/events` - Tạo sự kiện mới (requires auth)
+- `PUT /api/events/:id` - Cập nhật sự kiện (requires auth)
+- `DELETE /api/events/:id` - Xóa sự kiện (requires auth)
+- `POST /api/events/:id/toggle-featured` - Toggle featured status (requires auth)
+
+---
+
+## 📁 Cấu trúc thư mục
 
 ```
 backend/
 ├── src/
-│   ├── server.js              # Entry point
+│   ├── config/
+│   │   └── db.js              # PostgreSQL connection & initialization
 │   ├── models/
-│   │   ├── Event.js           # Event model & CRUD
-│   │   └── Admin.js           # Admin model & auth
+│   │   ├── Event.js           # Event model (PostgreSQL)
+│   │   └── Admin.js           # Admin model (PostgreSQL)
 │   ├── routes/
-│   │   ├── auth.js            # Auth endpoints
-│   │   └── events.js          # Event endpoints
-│   └── middleware/
-│       ├── auth.js            # JWT verification
-│       └── upload.js          # File upload handling
-├── data/                      # JSON storage (auto-created)
-│   ├── events.json            # Events data
-│   ├── admin.json             # Admin credentials
-│   └── counter.json           # Auto-increment IDs
-├── uploads/                   # Uploaded images (auto-created)
-├── .env                       # Environment variables
-└── package.json
+│   │   ├── events.js          # Event routes
+│   │   └── auth.js            # Auth routes
+│   ├── middleware/
+│   │   ├── auth.js            # JWT middleware
+│   │   └── upload.js          # Image upload middleware
+│   ├── scripts/
+│   │   └── seed-database.js   # Sample data seeder
+│   └── server.js              # Main server file
+├── uploads/                    # Uploaded images (auto-generated)
+├── .env.example               # Environment variables template
+├── package.json
+└── README.md
 ```
-
-## 🔐 Environment Variables
-
-Copy `.env.example` to `.env` and configure:
-
-```env
-PORT=5000
-NODE_ENV=development
-CORS_ORIGIN=*
-JWT_SECRET=your-secret-key
-ADMIN_PASSWORD=campusia@12345
-```
-
-**⚠️ Important:** Change `JWT_SECRET` and `ADMIN_PASSWORD` in production!
-
-## 📝 API Endpoints
-
-### Authentication
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/api/auth/login` | Admin login | No |
-| GET | `/api/auth/verify` | Verify JWT token | Yes |
-| POST | `/api/auth/change-password` | Change password | Yes |
-
-### Events
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/events` | Get all events | No |
-| GET | `/api/events/:id` | Get event by ID | No |
-| POST | `/api/events` | Create event | Yes |
-| PUT | `/api/events/:id` | Update event | Yes |
-| DELETE | `/api/events/:id` | Delete event | Yes |
-| POST | `/api/events/:id/toggle-featured` | Toggle featured | Yes |
-
-## 🎯 Features
-
-- ✅ No database required - uses JSON files
-- ✅ Auto-create JSON files on startup
-- ✅ JWT authentication
-- ✅ Password hashing with bcrypt
-- ✅ File upload support (base64 & multipart)
-- ✅ Auto-increment IDs
-- ✅ CORS enabled
-- ✅ Request logging
-- ✅ Error handling
-
-## 💾 Data Storage
-
-Data is stored in JSON files:
-
-- `data/events.json` - Array of events
-- `data/admin.json` - Admin credentials
-- `data/counter.json` - Auto-increment counter
-
-**Backup:** Just copy the `data/` folder!
-
-## 🧪 Testing
-
-```bash
-# Health check
-curl http://localhost:5000/health
-
-# Get events
-curl http://localhost:5000/api/events
-
-# Login
-curl -X POST http://localhost:5000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"password":"campusia@12345"}'
-```
-
-## 🚀 Deployment
-
-### Vercel
-
-```bash
-vercel
-```
-
-### Railway
-
-```bash
-railway up
-```
-
-### Environment Variables (Production)
-
-Set these in your hosting platform:
-- `JWT_SECRET` - Random secure string (32+ chars)
-- `ADMIN_PASSWORD` - Strong password
-- `CORS_ORIGIN` - Your frontend domain
-- `NODE_ENV=production`
-
-## 📚 Documentation
-
-- [API Docs](../docs/README.md#api-documentation)
-- [Setup Guide](../docs/SETUP.md)
-- [Architecture](../docs/ARCHITECTURE.md)
-
-## 🔒 Security
-
-- Passwords are hashed with bcrypt (10 rounds)
-- JWT tokens expire after 7 days
-- CORS can be restricted to specific origins
-- Input validation on all endpoints
-
-## 🐛 Troubleshooting
-
-**Port already in use:**
-```bash
-# Change PORT in .env
-PORT=3001
-```
-
-**JSON files not created:**
-- Check folder permissions
-- Ensure Node.js can write files
-- Check logs for errors
-
-**Login fails:**
-- Verify password in `.env`
-- Check `data/admin.json` exists
-- Try deleting `admin.json` and restart
-
-## 📞 Support
-
-- GitHub Issues: [Create issue](https://github.com/YOUR_USERNAME/campusia/issues)
-- Email: contact@campusia.com
 
 ---
 
-Made with ❤️ in Vietnam | No database required!
+## 🗃️ Database Schema
+
+### **Events Table:**
+```sql
+CREATE TABLE events (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  subtitle TEXT,
+  description TEXT NOT NULL,
+  date VARCHAR(50) NOT NULL,
+  time VARCHAR(50) NOT NULL,
+  location VARCHAR(255) NOT NULL,
+  venue VARCHAR(255) NOT NULL,
+  image TEXT,
+  images TEXT[],
+  category VARCHAR(50) NOT NULL,
+  event_type VARCHAR(50) NOT NULL,
+  organizer VARCHAR(255) NOT NULL,
+  rating NUMERIC(2, 1) DEFAULT 4.5,
+  attendees INTEGER DEFAULT 0,
+  highlights TEXT[],
+  registration_url TEXT NOT NULL,
+  featured BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### **Admin Table:**
+```sql
+CREATE TABLE admin (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(50) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  last_login TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+## 🔐 Default Admin
+
+- **Username:** `admin`
+- **Password:** `campusia@12345` (hoặc theo `ADMIN_PASSWORD` trong .env)
+
+Admin account được tự động tạo khi database khởi tạo lần đầu.
+
+---
+
+## 🌐 CORS Configuration
+
+Backend đã được cấu hình CORS để kết nối với:
+- `https://campusia.online` (Production frontend)
+- Hoặc domain được chỉ định trong `CORS_ORIGIN`/`FRONTEND_URL`
+
+---
+
+## 🚀 Deployment trên Render
+
+### **Quick Steps:**
+
+1. **Push code lên GitHub**
+2. **Tạo PostgreSQL database** trên Render
+3. **Add DATABASE_URL** vào Backend environment
+4. **Deploy backend**
+
+**Chi tiết:** Xem file **`QUICK_START_POSTGRESQL.md`**
+
+---
+
+## 🐛 Troubleshooting
+
+### **Error: "DATABASE_URL is not set"**
+➡️ Check file `.env` hoặc Render environment variables
+
+### **Error: "Connection refused"**
+➡️ PostgreSQL chưa sẵn sàng, đợi vài phút
+
+### **Error: "Cannot find module 'pg'"**
+➡️ Chạy `npm install` hoặc push code lên GitHub (cho Render)
+
+---
+
+## 📊 Database Management
+
+### **Xem dữ liệu:**
+
+Trên Render PostgreSQL service → Tab "Shell":
+
+```sql
+-- Xem tất cả events
+SELECT id, title, event_type, featured FROM events;
+
+-- Đếm số events
+SELECT COUNT(*) FROM events;
+
+-- Xem featured events
+SELECT title FROM events WHERE featured = true;
+```
+
+### **Backup:**
+
+Render Free tier tự động backup hàng ngày. Manual backup:
+1. PostgreSQL service → Tab "Backups"
+2. Click "Create Backup"
+
+---
+
+## 📚 Tài liệu bổ sung
+
+- **`POSTGRESQL_MIGRATION.md`** - Chi tiết migration từ JSON sang PostgreSQL
+- **`QUICK_START_POSTGRESQL.md`** - Hướng dẫn nhanh deploy
+- **`.env.example`** - Environment variables mẫu
+
+---
+
+## 🎉 Benefits của PostgreSQL
+
+| Trước (JSON) | Sau (PostgreSQL) |
+|-------------|------------------|
+| ❌ Data mất khi restart | ✅ Persistent storage |
+| ❌ Không backup | ✅ Auto-backup |
+| ❌ Không scale | ✅ Scalable |
+| ❌ Concurrent issues | ✅ ACID transactions |
+
+---
+
+## 📄 License
+
+MIT
+
+---
+
+Made with ❤️ in Vietnam

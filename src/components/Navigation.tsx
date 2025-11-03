@@ -1,10 +1,11 @@
 import { Button } from './ui/button'
 import { Input } from './ui/input'
-import { Search, LogIn } from 'lucide-react'
+import { Search, LogIn, Shield } from 'lucide-react'
 import logo from 'figma:asset/620bfad20cf1b2ff39b6cfa165a49485c5a89610.png'
 
 interface NavigationProps {
-  onLogin?: () => void
+  onUserLogin?: () => void
+  onAdminLogin?: () => void
   onNavigate?: (category: string | null) => void
   onSearchChange?: (query: string) => void
   activeCategory?: string | null
@@ -12,7 +13,8 @@ interface NavigationProps {
 }
 
 export function Navigation({ 
-  onLogin, 
+  onUserLogin,
+  onAdminLogin, 
   onNavigate, 
   onSearchChange, 
   activeCategory = null,
@@ -66,14 +68,24 @@ export function Navigation({
               />
             </div>
             
-            {/* Login Button */}
+            {/* User Login Button */}
             <Button 
-              onClick={onLogin}
+              onClick={onUserLogin}
               variant="outline"
               className="border-purple-600 text-purple-600 hover:bg-purple-50 flex items-center space-x-2"
             >
               <LogIn className="w-4 h-4" />
-              <span>Login</span>
+              <span>Đăng nhập</span>
+            </Button>
+            
+            {/* Admin Login Button */}
+            <Button 
+              onClick={onAdminLogin}
+              variant="outline"
+              className="border-gray-700 text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
+            >
+              <Shield className="w-4 h-4" />
+              <span>Admin</span>
             </Button>
           </div>
         </div>

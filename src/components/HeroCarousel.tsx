@@ -24,8 +24,8 @@ export function HeroCarousel({ events, onEventClick }: HeroCarouselProps) {
 
   const slides = featuredEvents.map(event => ({
     id: event.id,
-    title: event.title.split(' ').slice(0, 2).join(' '),
-    subtitle: event.title.split(' ').slice(2).join(' ') || event.subtitle || '',
+    title: event.title,
+    subtitle: event.subtitle || '',
     date: event.date,
     time: event.time,
     location: event.venue,

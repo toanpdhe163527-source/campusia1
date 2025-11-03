@@ -12,9 +12,9 @@ We have **5 main documentation files**. Start with #1:
    - Features, Quick Start, Deployment
    - Everything you need to get started
 
-2. **[QUICK_DEPLOY.md](QUICK_DEPLOY.md)** 🚀 - **Deploy to Internet**
+2. **[RENDER_FULLSTACK.md](RENDER_FULLSTACK.md)** 🚀 - **Deploy to Internet**
    - 30-minute deployment guide
-   - Step-by-step Vercel + Render setup
+   - Deploy full stack on Render (free)
 
 3. **[TESTING.md](TESTING.md)** 🧪
    - Complete testing guide

@@ -6,12 +6,12 @@ import { Label } from './ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import logo from 'figma:asset/620bfad20cf1b2ff39b6cfa165a49485c5a89610.png'
 
-interface LoginProps {
+interface AdminLoginProps {
   onBack: () => void
   onLogin: (password: string) => Promise<boolean>
 }
 
-export function Login({ onBack, onLogin }: LoginProps) {
+export function AdminLogin({ onBack, onLogin }: AdminLoginProps) {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
@@ -47,7 +47,7 @@ export function Login({ onBack, onLogin }: LoginProps) {
           >
             <ArrowLeft className="w-6 h-6" />
           </Button>
-          <h1 className="text-gray-900 text-xl">Đăng nhập để tạo sự kiện</h1>
+          <h1 className="text-gray-900 text-xl">Đăng nhập Admin</h1>
         </div>
 
         {/* Login Card */}
@@ -56,7 +56,7 @@ export function Login({ onBack, onLogin }: LoginProps) {
             <div className="flex justify-center mb-4">
               <img src={logo} alt="Campusia" className="h-16" />
             </div>
-            <p className="text-gray-600">Đăng nhập để tạo và quản lý sự kiện của bạn</p>
+            <p className="text-gray-600">Đăng nhập với quyền admin để tạo và quản lý sự kiện</p>
           </CardHeader>
           
           <CardContent>

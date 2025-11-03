@@ -2,6 +2,20 @@
 
 Website bán vé sự kiện tiếng Việt với thiết kế hiện đại, light theme, purple accent colors.
 
+## 🚨 MỚI! PostgreSQL Migration (2025-10-22)
+
+Backend đã được **MIGRATE** từ JSON storage sang **PostgreSQL Database**!
+
+**📖 BẮT ĐẦU Ở ĐÂY:**
+- **Deploy backend:** [`START_HERE_POSTGRESQL.md`](START_HERE_POSTGRESQL.md) ⭐
+- **Quick guide:** [`QUICK_START_POSTGRESQL.md`](QUICK_START_POSTGRESQL.md) ⭐⭐
+- **All docs:** [`DOCUMENTATION_INDEX.md`](DOCUMENTATION_INDEX.md) 📚
+
+**Benefits:**
+- ✅ Dữ liệu PERMANENT (không mất khi restart)
+- ✅ Auto-backup hàng ngày
+- ✅ Production-ready với PostgreSQL
+
 ## ✨ Tính năng
 
 ### 🌟 Người dùng
@@ -139,7 +153,7 @@ campusia/
 ### Backend
 - **Node.js** 14+
 - **Express** 4.18
-- **JSON Storage** (no database needed!)
+- **PostgreSQL Database** 🆕 (persistent storage)
 - **JWT** authentication
 - **Bcrypt** password hashing
 - **CORS** enabled
@@ -239,47 +253,57 @@ const PORT = 5001; // hoặc port khác
 
 ## 📦 Deployment
 
-### Backend
+### 🚀 Render Full Stack (Khuyến nghị)
 
-**Option 1: Heroku**
+Deploy cả Backend + Frontend lên Render.com (miễn phí):
+
+**👉 Xem hướng dẫn chi tiết:** [RENDER_FULLSTACK.md](RENDER_FULLSTACK.md)
+
+**Thời gian:** 30 phút  
+**Chi phí:** $0/tháng (Free tier)
+
+**Quick summary:**
+
+1. **Deploy Backend:**
+   - Tạo Web Service trên Render
+   - Root Directory: `backend`
+   - Start Command: `node src/server.js`
+   - Set environment variables
+
+2. **Deploy Frontend:**
+   - Tạo Static Site trên Render
+   - Build Command: `npm install && npm run build`
+   - Publish Directory: `dist`
+
+3. **Kết nối:**
+   - Update `VITE_API_URL` trong frontend
+   - Update `FRONTEND_URL` trong backend
+
+**Result:**
+- Frontend: `https://campusia-frontend.onrender.com`
+- Backend: `https://campusia-backend.onrender.com`
+
+### 📖 Deployment Guides
+
+- 🚀 [RENDER_FULLSTACK.md](RENDER_FULLSTACK.md) - Hướng dẫn chính (START HERE)
+- 📖 [DEPLOYMENT.md](DEPLOYMENT.md) - Chi tiết và best practices
+- ✅ [DEPLOY_CHECKLIST.md](DEPLOY_CHECKLIST.md) - Checklist từng bước
+- 🌐 [CUSTOM_DOMAIN.md](CUSTOM_DOMAIN.md) - Setup domain riêng
+
+### 🔧 Environment Variables
+
+**Frontend (.env):**
 ```bash
-cd backend
-heroku create campusia-api
-git push heroku main
+VITE_API_URL=https://campusia-backend.onrender.com
 ```
 
-**Option 2: Railway**
+**Backend (.env):**
 ```bash
-railway init
-railway up
-```
-
-**Option 3: VPS**
-```bash
-# PM2 for process management
-npm install -g pm2
-cd backend
-pm2 start src/server.js --name campusia-api
-```
-
-### Frontend
-
-**Option 1: Vercel**
-```bash
-npm install -g vercel
-vercel
-```
-
-**Option 2: Netlify**
-```bash
-npm run build
-# Drag & drop dist/ folder to Netlify
-```
-
-**Environment Variables:**
-```bash
-# Update API URL
-VITE_API_URL=https://your-backend-url.com/api
+PORT=10000
+NODE_ENV=production
+JWT_SECRET=your-super-secret-jwt-key
+ADMIN_PASSWORD=campusia@12345
+FRONTEND_URL=https://campusia-frontend.onrender.com
 ```
 
 ## 🔐 Security
@@ -309,17 +333,31 @@ npm run dev
 
 ## 📊 Data Storage
 
-Tất cả data được lưu trong JSON files:
+### **🆕 PostgreSQL Database (Production)**
+
+Data được lưu trong **PostgreSQL database** (persistent):
+
+```sql
+Tables:
+├── events          # Danh sách sự kiện
+└── admin           # Admin credentials
+```
+
+**Benefits:**
+- ✅ Data không bao giờ mất
+- ✅ Auto-backup hàng ngày (Render Free tier)
+- ✅ ACID transactions
+- ✅ Scalable
+
+**Docs:** Xem [`POSTGRESQL_MIGRATION.md`](POSTGRESQL_MIGRATION.md)
+
+### **Legacy: JSON Files (Local Dev)**
 
 ```
 backend/data/
-├── events.json      # Danh sách sự kiện
-└── admin.json       # Admin credentials
+├── events.json      # (Legacy - not used in production)
+└── admin.json       # (Legacy - not used in production)
 ```
-
-**Backup:** Chỉ cần copy folder `backend/data/`
-
-**Restore:** Paste lại vào `backend/data/`
 
 ## 🎨 Customization
 
@@ -361,12 +399,27 @@ const categories = [
 
 ## 📚 Documentation Files
 
+### **🆕 PostgreSQL Migration (START HERE):**
+
+| File | Mục đích |
+|------|----------|
+| **[START_HERE_POSTGRESQL.md](START_HERE_POSTGRESQL.md)** | ⭐ Entry point cho PostgreSQL |
+| **[QUICK_START_POSTGRESQL.md](QUICK_START_POSTGRESQL.md)** | ⭐⭐ 5 bước deploy (15 phút) |
+| [POSTGRESQL_MIGRATION.md](POSTGRESQL_MIGRATION.md) | Chi tiết migration + troubleshooting |
+| [FINAL_MIGRATION_GUIDE.md](FINAL_MIGRATION_GUIDE.md) | Complete guide |
+| [MIGRATION_SUMMARY.md](MIGRATION_SUMMARY.md) | Tổng kết changes |
+| **[DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md)** | 📚 Index tất cả docs |
+
+### **Original Docs:**
+
 | File | Mục đích |
 |------|----------|
 | [README.md](README.md) | Main documentation (👈 you are here) |
-| [TESTING.md](TESTING.md) | Testing guide & scenarios |
-| [CHANGELOG.md](CHANGELOG.md) | Bugfixes & updates |
+| [RENDER_FULLSTACK.md](RENDER_FULLSTACK.md) | Deploy lên Internet (legacy) |
+| [START_HERE_FIX.md](START_HERE_FIX.md) | Fix connection issues |
+| [TESTING.md](TESTING.md) | Testing guide |
 | [backend/README.md](backend/README.md) | Backend API docs |
+| [backend/LOCAL_DEVELOPMENT.md](backend/LOCAL_DEVELOPMENT.md) | 🆕 Local dev setup |
 
 ## 🤝 Contributing
 
@@ -442,7 +495,7 @@ localStorage.getItem('admin_token')
 - [ ] Event analytics
 
 ### v2.0 (Future)
-- [ ] MongoDB migration
+- [x] PostgreSQL migration ✅ **DONE (2025-10-22)**
 - [ ] Mobile app
 - [ ] Multi-language
 - [ ] Advanced analytics
@@ -470,5 +523,7 @@ npm install && npm run dev
 
 **Made with ❤️ for Campusia**
 
-**Version:** 1.0.0  
-**Last Updated:** 2025-01-16
+**Version:** 2.0.0 (PostgreSQL Migration)  
+**Last Updated:** 2025-10-22
+
+**🎊 Latest:** Backend migrated to PostgreSQL! See [`START_HERE_POSTGRESQL.md`](START_HERE_POSTGRESQL.md)

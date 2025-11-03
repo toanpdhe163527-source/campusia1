@@ -4,7 +4,8 @@ import { HeroCarousel } from './components/HeroCarousel'
 import { SpecialEvents } from './components/SpecialEvents'
 import { EventDetail } from './components/EventDetail'
 import { CreateEvent } from './components/CreateEvent'
-import { Login } from './components/Login'
+import { AdminLogin } from './components/Login'
+import { UserLogin } from './components/UserLogin'
 import { AdminDashboard } from './components/AdminDashboard'
 import { SearchAndFilters, FilterState } from './components/SearchAndFilters'
 import { Event } from './data/events'
@@ -12,12 +13,13 @@ import { filterEvents, sortEvents } from './utils/filterEvents'
 import * as api from './utils/api'
 import { initializeDatabase } from './utils/initializeData'
 
-type ViewState = 'home' | 'eventDetail' | 'createEvent' | 'login' | 'admin'
+type ViewState = 'home' | 'eventDetail' | 'createEvent' | 'userLogin' | 'adminLogin' | 'admin'
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewState>('home')
   const [selectedEventId, setSelectedEventId] = useState<number | null>(null)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false)
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false)
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
@@ -73,8 +75,10 @@ export default function App() {
   }
 
   async function checkAuth() {
-    const isValid = await api.verifyAuth()
-    setIsAuthenticated(isValid)
+    const isAdminValid = await api.verifyAuth() && api.isAdmin()
+    const isUserValid = api.isUserLoggedIn()
+    setIsAdminAuthenticated(isAdminValid)
+    setIsUserLoggedIn(isUserValid)
   }
 
   // Filter and sort events based on current filters and active category
@@ -108,19 +112,38 @@ export default function App() {
     loadEvents() // Refresh events when returning home
   }
 
-  const handleLogin = async (password: string) => {
-    const result = await api.login(password)
+  const handleAdminLogin = async (password: string) => {
+    const result = await api.adminLogin(password)
     if (result.success) {
-      setIsAuthenticated(true)
+      setIsAdminAuthenticated(true)
       setCurrentView('admin')
       return true
     }
     return false
   }
 
+  const handleUserLogin = async (email: string) => {
+    const result = await api.userLogin(email)
+    if (result.success) {
+      setIsUserLoggedIn(true)
+      setCurrentView('home')
+    }
+    return result
+  }
+
+  const handleUserRegister = async (name: string, email: string) => {
+    const result = await api.userRegister(name, email)
+    if (result.success) {
+      setIsUserLoggedIn(true)
+      setCurrentView('home')
+    }
+    return result
+  }
+
   const handleLogout = () => {
     api.clearAuthToken()
-    setIsAuthenticated(false)
+    setIsAdminAuthenticated(false)
+    setIsUserLoggedIn(false)
     setCurrentView('home')
   }
 
@@ -175,18 +198,29 @@ export default function App() {
     return result
   }
 
-  // Login view
-  if (currentView === 'login') {
+  // User Login view
+  if (currentView === 'userLogin') {
     return (
-      <Login
+      <UserLogin
         onBack={() => setCurrentView('home')}
-        onLogin={handleLogin}
+        onLogin={handleUserLogin}
+        onRegister={handleUserRegister}
+      />
+    )
+  }
+
+  // Admin Login view
+  if (currentView === 'adminLogin') {
+    return (
+      <AdminLogin
+        onBack={() => setCurrentView('home')}
+        onLogin={handleAdminLogin}
       />
     )
   }
 
   // Admin Dashboard view
-  if (currentView === 'admin' && isAuthenticated) {
+  if (currentView === 'admin' && isAdminAuthenticated) {
     return (
       <AdminDashboard
         events={events}
@@ -202,8 +236,8 @@ export default function App() {
 
   // Create Event view
   if (currentView === 'createEvent') {
-    if (!isAuthenticated) {
-      setCurrentView('login')
+    if (!isAdminAuthenticated) {
+      setCurrentView('adminLogin')
       return null
     }
     
@@ -237,7 +271,8 @@ export default function App() {
       
       {/* Navigation */}
       <Navigation
-        onLogin={() => setCurrentView('login')}
+        onUserLogin={() => setCurrentView('userLogin')}
+        onAdminLogin={() => setCurrentView('adminLogin')}
         onNavigate={handleNavigate}
         onSearchChange={handleSearchChange}
         activeCategory={activeCategory}
