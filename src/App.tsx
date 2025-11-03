@@ -126,7 +126,12 @@ export default function App() {
     const result = await api.userLogin(email)
     if (result.success) {
       setIsUserLoggedIn(true)
-      setCurrentView('home')
+      // If there's a pending event to view, go back to it
+      if (selectedEventId) {
+        setCurrentView('eventDetail')
+      } else {
+        setCurrentView('home')
+      }
     }
     return result
   }
@@ -135,9 +140,19 @@ export default function App() {
     const result = await api.userRegister(name, email)
     if (result.success) {
       setIsUserLoggedIn(true)
-      setCurrentView('home')
+      // If there's a pending event to view, go back to it
+      if (selectedEventId) {
+        setCurrentView('eventDetail')
+      } else {
+        setCurrentView('home')
+      }
     }
     return result
+  }
+
+  const handleLoginRequired = () => {
+    // Save current view and navigate to user login
+    setCurrentView('userLogin')
   }
 
   const handleLogout = () => {
@@ -255,6 +270,8 @@ export default function App() {
       <EventDetail
         event={selectedEvent}
         onBack={handleBackToHome}
+        isUserLoggedIn={isUserLoggedIn}
+        onLoginRequired={handleLoginRequired}
       />
     )
   }

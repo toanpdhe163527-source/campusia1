@@ -1,9 +1,11 @@
-import { ArrowLeft, Calendar, Clock, MapPin, Share2, Heart, Star, Users, Music } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { ArrowLeft, Calendar, Clock, MapPin, Share2, Heart, Star, Users, Music, Check } from 'lucide-react'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
 import { Card, CardContent } from './ui/card'
 import { Separator } from './ui/separator'
 import { ImageWithFallback } from './figma/ImageWithFallback'
+import * as api from '../utils/api'
 
 interface EventDetailProps {
   event: {
@@ -25,9 +27,55 @@ interface EventDetailProps {
     registrationUrl: string
   }
   onBack: () => void
+  isUserLoggedIn?: boolean
+  onLoginRequired?: () => void
 }
 
-export function EventDetail({ event, onBack }: EventDetailProps) {
+export function EventDetail({ event, onBack, isUserLoggedIn = false, onLoginRequired }: EventDetailProps) {
+  const [isJoining, setIsJoining] = useState(false)
+  const [hasJoined, setHasJoined] = useState(false)
+  const [error, setError] = useState('')
+
+  // Check if user has already joined this event
+  useEffect(() => {
+    if (isUserLoggedIn) {
+      checkUserJoinedStatus()
+    }
+  }, [isUserLoggedIn, event.id])
+
+  async function checkUserJoinedStatus() {
+    const result = await api.getUserEvents()
+    if (result.success && result.events) {
+      const joined = result.events.some((e: any) => e.event_id === event.id)
+      setHasJoined(joined)
+    }
+  }
+
+  async function handleJoinEvent() {
+    // If not logged in, redirect to login
+    if (!isUserLoggedIn) {
+      onLoginRequired?.()
+      return
+    }
+
+    // If already joined, do nothing
+    if (hasJoined) {
+      return
+    }
+
+    setIsJoining(true)
+    setError('')
+
+    const result = await api.joinEvent(event.id)
+    
+    if (result.success) {
+      setHasJoined(true)
+    } else {
+      setError(result.message || 'Không thể tham gia sự kiện')
+    }
+
+    setIsJoining(false)
+  }
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -74,7 +122,6 @@ export function EventDetail({ event, onBack }: EventDetailProps) {
             </div>
             <div className="flex items-center space-x-1 text-white">
               <Users className="w-4 h-4" />
-              <span className="text-sm">{event.attendees.toLocaleString()} quan tâm</span>
             </div>
           </div>
           <h1 className="text-white text-4xl font-bold mb-2">{event.title}</h1>
@@ -155,8 +202,6 @@ export function EventDetail({ event, onBack }: EventDetailProps) {
                     <h3 className="text-lg text-gray-900">{event.organizer}</h3>
                     <p className="text-gray-600">Đơn vị tổ chức sự kiện uy tín</p>
                     <div className="flex items-center space-x-4 mt-2">
-                      <span className="text-sm text-gray-600">4.8 ⭐ (2,847 đánh giá)</span>
-                      <span className="text-sm text-gray-600">156 sự kiện đã tổ chức</span>
                     </div>
                   </div>
                 </div>
@@ -171,28 +216,69 @@ export function EventDetail({ event, onBack }: EventDetailProps) {
                 <h2 className="text-gray-900 mb-4">Tham gia sự kiện</h2>
                 
                 <div className="text-center mb-6">
-                  <p className="text-gray-700 mb-4">
-                    Đăng ký ngay để không bỏ lỡ sự kiện tuyệt vời này!
-                  </p>
+                  {!isUserLoggedIn ? (
+                    <p className="text-gray-700 mb-4">
+                      Đăng nhập để tham gia sự kiện và nhận thông báo cập nhật!
+                    </p>
+                  ) : hasJoined ? (
+                    <div className="p-3 bg-green-50 rounded-lg mb-4">
+                      <div className="flex items-center justify-center space-x-2 text-green-700">
+                        <Check className="w-5 h-5" />
+                        <span>Bạn đã đăng ký tham gia sự kiện này</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-gray-700 mb-4">
+                      Đăng ký ngay để không bỏ lỡ sự kiện tuyệt vời này!
+                    </p>
+                  )}
                 </div>
+
+                {error && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-red-600 text-sm">{error}</p>
+                  </div>
+                )}
 
                 <div className="space-y-3">
                   <Button 
-                    className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-                    onClick={() => window.open(event.registrationUrl, '_blank')}
+                    className={`w-full ${
+                      hasJoined 
+                        ? 'bg-green-600 hover:bg-green-700' 
+                        : 'bg-purple-600 hover:bg-purple-700'
+                    } text-white`}
+                    onClick={handleJoinEvent}
+                    disabled={isJoining || hasJoined}
                   >
-                    Đăng ký tham gia
-                  </Button>
-                  <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-50">
-                    Chia sẻ sự kiện
-                  </Button>
+                    {isJoining ? (
+                      'Đang xử lý...'
+                    ) : hasJoined ? (
+                      <span className="flex items-center justify-center space-x-2">
+                        <Check className="w-4 h-4" />
+                        <span>Đã tham gia</span>
+                      </span>
+                    ) : !isUserLoggedIn ? (
+                      'Đăng nhập để tham gia'
+                    ) : (
+                      'Đăng ký tham gia'
+                    )}
                 </div>
 
                 <div className="mt-4 p-3 bg-purple-50 rounded-lg">
                   <p className="text-xs text-gray-700">
-                    ✓ Đăng ký miễn phí và nhanh chóng<br />
-                    ✓ Nhận thông tin cập nhật qua email<br />
-                    ✓ Hỗ trợ 24/7 nếu có thắc mắc
+                    {isUserLoggedIn ? (
+                      <>
+                        ✓ Đăng ký miễn phí và nhanh chóng<br />
+                        ✓ Nhận thông tin cập nhật qua email<br />
+                        ✓ Theo dõi lịch sử tham gia sự kiện
+                      </>
+                    ) : (
+                      <>
+                        ✓ Đăng nhập để tham gia sự kiện<br />
+                        ✓ Theo dõi các sự kiện đã tham gia<br />
+                        ✓ Nhận thông báo và cập nhật mới nhất
+                      </>
+                    )}
                   </p>
                 </div>
               </CardContent>
