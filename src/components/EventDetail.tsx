@@ -122,6 +122,7 @@ export function EventDetail({ event, onBack, isUserLoggedIn = false, onLoginRequ
             </div>
             <div className="flex items-center space-x-1 text-white">
               <Users className="w-4 h-4" />
+              <span className="text-sm">{event.attendees.toLocaleString()} quan tâm</span>
             </div>
           </div>
           <h1 className="text-white text-4xl font-bold mb-2">{event.title}</h1>
@@ -201,8 +202,6 @@ export function EventDetail({ event, onBack, isUserLoggedIn = false, onLoginRequ
                   <div>
                     <h3 className="text-lg text-gray-900">{event.organizer}</h3>
                     <p className="text-gray-600">Đơn vị tổ chức sự kiện uy tín</p>
-                    <div className="flex items-center space-x-4 mt-2">
-                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -262,6 +261,8 @@ export function EventDetail({ event, onBack, isUserLoggedIn = false, onLoginRequ
                     ) : (
                       'Đăng ký tham gia'
                     )}
+                  </Button>
+                </div>
 
                 <div className="mt-4 p-3 bg-purple-50 rounded-lg">
                   <p className="text-xs text-gray-700">
