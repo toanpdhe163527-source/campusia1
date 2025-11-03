@@ -262,7 +262,6 @@ export function EventDetail({ event, onBack, isUserLoggedIn = false, onLoginRequ
                     ) : (
                       'Đăng ký tham gia'
                     )}
-                </div>
 
                 <div className="mt-4 p-3 bg-purple-50 rounded-lg">
                   <p className="text-xs text-gray-700">
